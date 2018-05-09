@@ -15,22 +15,32 @@ main =
 -- MODEL
 
 type alias Model =
-    { diceFace : Int }
+    { firstDiceFace : Int
+    , secondDiceFace : Int
+    }
 
 init : (Model, Cmd Msg)
-init = (Model 1, Cmd.none)
+init = (Model 1 1, Cmd.none)
 
-type Msg = Roll | NewFace Int
+type Msg
+    = RollFirst
+    | RollSecond
+    | NewFirstFace Int
+    | NewSecondFace Int
 
 -- UPDATE
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        Roll ->
-            (model, Random.generate NewFace (Random.int 1 6))
-        NewFace newFace ->
-            (Model newFace, Cmd.none)
+        RollFirst ->
+            (model, Random.generate NewFirstFace (Random.int 1 6))
+        RollSecond ->
+            (model, Random.generate NewSecondFace (Random.int 1 6))
+        NewFirstFace newFace ->
+            ({ model | firstDiceFace = newFace }, Cmd.none)
+        NewSecondFace newFace ->
+            ({ model | secondDiceFace = newFace }, Cmd.none)
 
 
 -- SUBSCRIPTIONS
@@ -44,17 +54,19 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div []
-        [ diceSvg model
-        , button [ onClick Roll ] [ text "Roll" ]
+        [ diceSvg model.firstDiceFace
+        , button [ onClick RollFirst ] [ text "Roll" ]
+        , diceSvg model.secondDiceFace
+        , button [ onClick RollSecond ] [ text "Roll" ]
         ]
 
-diceSvg : Model -> Svg Msg
-diceSvg model =
+diceSvg : Int -> Svg Msg
+diceSvg points =
     svg [ width "120"
         , height "120"
         , viewBox "0 0 120 120"
         ]
-        (dicePoints (model.diceFace))
+        (dicePoints points)
 
 dicePoints : Int -> List (Svg Msg)
 dicePoints points =
